@@ -13,9 +13,7 @@
 
 # For more information on creating a Dockerfile
 # https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
-FROM tensorflow/tensorflow:1.15.2-gpu-py3
-#FROM 727897471807.dkr.ecr.cn-northwest-1.amazonaws.com.cn/tensorflow-training
-#FROM 343958593302.dkr.ecr.cn-northwest-1.amazonaws.com.cn/sagemaker-tf-albert-chinese-ner:latest
+FROM tensorflow/tensorflow:2.2.2-gpu
 
 RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 
@@ -24,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | tee /etc/apt/sources.list.d/tensorflow-serving.list
 RUN curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install tensorflow-model-server
+
+RUN pip install deepctr[gpu] pandas sklearn
 
 ENV PATH="/opt/ml/code:${PATH}"
 
