@@ -1,13 +1,17 @@
+import os
+import argparse
+
 import pandas as pd
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from tensorflow.keras.utils import multi_gpu_model
 
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
 
-if __name__ == "__main__":
-    data = pd.read_csv('/opt/ml/code/data/criteo_sample.txt')
+def main(model_dir, data_dir, train_steps):
+    data = pd.read_csv(os.path.join(data_dir, 'criteo_sample.txt'))
 
     sparse_features = ['C' + str(i) for i in range(1, 27)]
     dense_features = ['I' + str(i) for i in range(1, 14)]
@@ -42,11 +46,56 @@ if __name__ == "__main__":
 
     # 4.Define Model,train,predict and evaluate
     model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    
+    gpus = int(os.getenv('SM_NUM_GPUS', '0'))
+    print('gpus:', gpus)
+    if gpus > 1:
+        model = multi_gpu_model(model, gpus=gpus)
+    
     model.compile("adam", "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
     history = model.fit(train_model_input, train[target].values,
-                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
+                        batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2, )
     pred_ans = model.predict(test_model_input, batch_size=256)
-    print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
-    print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
+    try:
+        print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
+    except Exception as e:
+        print(e)
+    try:
+        print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
+    except Exception as e:
+        print(e)
+    
+    model.save_weights(os.path.join(model_dir, 'DeepFM_w.h5'))
+
+if __name__ == "__main__":
+    args_parser = argparse.ArgumentParser()
+    # For more information:
+    # https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo.html
+    args_parser.add_argument(
+        '--data_dir',
+        default='/opt/ml/input/data/training',
+        type=str,
+        help='The directory where the input data is stored. Default: /opt/ml/input/data/training. This '
+             'directory corresponds to the SageMaker channel named \'training\', which was specified when creating '
+             'our training job on SageMaker')
+
+    # For more information:
+    # https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html
+    args_parser.add_argument(
+        '--model_dir',
+        default='/opt/ml/model',
+        type=str,
+        help='The directory where the model will be stored. Default: /opt/ml/model. This directory should contain all '
+             'final model artifacts as Amazon SageMaker copies all data within this directory as a single object in '
+             'compressed tar format.')
+
+    args_parser.add_argument(
+        '--train_steps',
+        type=int,
+        default=100,
+        help='The number of steps to use for training.')
+    args = args_parser.parse_args()
+    main(**vars(args))
+    
