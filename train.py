@@ -57,7 +57,31 @@ def main(model_dir, data_dir, train_steps, model_name):
         model = NFM(linear_feature_columns, dnn_feature_columns, task='binary')
     elif model_name == 'DIN':
         model = DIN(linear_feature_columns, dnn_feature_columns, task='binary')
-    else:
+    elif model_name == 'CCPM':
+        model = CCPM(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'PNN':
+        model = PNN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'AFM':
+        model = AFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'DCN':
+        model = DCN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'DIEN':
+        model = DIEN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'DSIN':
+        model = DSIN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'xDeepFM':
+        model = xDeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'AutoInt':
+        model = AutoInt(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'ONN':
+        model = ONN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'FGCNN':
+        model = FGCNN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'FiBiNET':
+        model = FiBiNET(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'FLEN':
+        model = FLEN(linear_feature_columns, dnn_feature_columns, task='binary')
+	else:
         print(model_name+' is not supported now.')
         return
     
