@@ -10,7 +10,7 @@ from tensorflow.keras.utils import multi_gpu_model
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
 
-def main(model_dir, data_dir, train_steps):
+def main(model_dir, data_dir, train_steps, model_name):
     data = pd.read_csv(os.path.join(data_dir, 'criteo_sample.txt'))
 
     sparse_features = ['C' + str(i) for i in range(1, 27)]
@@ -45,7 +45,21 @@ def main(model_dir, data_dir, train_steps):
     test_model_input = {name:test[name] for name in feature_names}
 
     # 4.Define Model,train,predict and evaluate
-    model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    if model_name == 'DeepFM':
+        model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'FNN':
+        model = FNN(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'WDL':
+        model = WDL(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'MLR':
+        model = MLR(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'NFM':
+        model = NFM(linear_feature_columns, dnn_feature_columns, task='binary')
+    elif model_name == 'DIN':
+        model = DIN(linear_feature_columns, dnn_feature_columns, task='binary')
+    else:
+        print(model_name+' is not supported now.')
+        return
     
     gpus = int(os.getenv('SM_NUM_GPUS', '0'))
     print('gpus:', gpus)
@@ -96,6 +110,13 @@ if __name__ == "__main__":
         type=int,
         default=100,
         help='The number of steps to use for training.')
+    
+    args_parser.add_argument(
+        '--model_name',
+        default='DeepFM',
+        type=str,
+        help='Models: CCPM, FNN, PNN, WDL, DeepFM, MLR, NFM, AFM, DCN, DCNMix, DIN, DIEN, DSIN, xDeepFM, AutoInt, ONN, FGCNN, FiBiNET, FLEN.')
+    
     args = args_parser.parse_args()
     main(**vars(args))
     
