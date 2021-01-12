@@ -5,12 +5,13 @@ import pandas as pd
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from tensorflow.keras.utils import multi_gpu_model
+# from tensorflow.keras.utils import multi_gpu_model
 
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
 
-def main(model_dir, data_dir, train_steps, model_name):
+def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
+    print(kwargs)
     data = pd.read_csv(os.path.join(data_dir, 'criteo_sample.txt'))
 
     sparse_features = ['C' + str(i) for i in range(1, 27)]
@@ -46,42 +47,42 @@ def main(model_dir, data_dir, train_steps, model_name):
 
     # 4.Define Model,train,predict and evaluate
     if model_name == 'DeepFM':
-        model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=kwargs['fm_group'], dnn_hidden_units=kwargs['dnn_hidden_units'], l2_reg_linear=kwargs['l2_reg_linear'], l2_reg_embedding=kwargs['l2_reg_embedding'], l2_reg_dnn=kwargs['l2_reg_dnn'], seed=kwargs['seed'], dnn_dropout=kwargs['dnn_dropout'], dnn_activation=kwargs['dnn_activation'], dnn_use_bn=kwargs['dnn_use_bn'], task=task)
     elif model_name == 'FNN':
-        model = FNN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = FNN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'WDL':
-        model = WDL(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = WDL(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'MLR':
-        model = MLR(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = MLR(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'NFM':
-        model = NFM(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = NFM(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'DIN':
-        model = DIN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = DIN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'CCPM':
-        model = CCPM(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = CCPM(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'PNN':
-        model = PNN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = PNN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'AFM':
-        model = AFM(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = AFM(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'DCN':
-        model = DCN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = DCN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'DIEN':
-        model = DIEN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = DIEN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'DSIN':
-        model = DSIN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = DSIN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'xDeepFM':
-        model = xDeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = xDeepFM(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'AutoInt':
-        model = AutoInt(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = AutoInt(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'ONN':
-        model = ONN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = ONN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'FGCNN':
-        model = FGCNN(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = FGCNN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'FiBiNET':
-        model = FiBiNET(linear_feature_columns, dnn_feature_columns, task='binary')
+        model = FiBiNET(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'FLEN':
-        model = FLEN(linear_feature_columns, dnn_feature_columns, task='binary')
-	else:
+        model = FLEN(linear_feature_columns, dnn_feature_columns, task=task)
+    else:
         print(model_name+' is not supported now.')
         return
     
@@ -140,6 +141,84 @@ if __name__ == "__main__":
         default='DeepFM',
         type=str,
         help='Models: CCPM, FNN, PNN, WDL, DeepFM, MLR, NFM, AFM, DCN, DCNMix, DIN, DIEN, DSIN, xDeepFM, AutoInt, ONN, FGCNN, FiBiNET, FLEN.')
+    
+    args_parser.add_argument(
+        '--task',
+        default='binary',
+        type=str,
+        help='"binary" for binary logloss or "regression" for regression loss')
+    
+    # hyperparameters
+    args_parser.add_argument(
+        '--fm_group',
+        default=['default_group'],
+        type=list,
+        help='group_name of features that will be used to do feature interactions.')
+    args_parser.add_argument(
+        '--dnn_hidden_units',
+        default=(128, 128),
+        type=list,
+        help='list of positive integer or empty list, the layer number and units in each layer of DNN')
+    args_parser.add_argument(
+        '--cross_num',
+        default=2,
+        type=int,
+        help='positive integet,cross layer number')
+    args_parser.add_argument(
+        '--cross_parameterization',
+        default='vector',
+        type=str,
+        help='"vector" or "matrix", how to parameterize the cross network.')
+    args_parser.add_argument(
+        '--l2_reg_cross',
+        default=1e-5,
+        type=float,
+        help='L2 regularizer strength applied to cross net')
+    args_parser.add_argument(
+        '--l2_reg_linear',
+        default=1e-05,
+        type=float,
+        help='L2 regularizer strength applied to linear part')
+    args_parser.add_argument(
+        '--l2_reg_embedding',
+        default=1e-05,
+        type=float,
+        help='L2 regularizer strength applied to embedding vector')
+    args_parser.add_argument(
+        '--l2_reg_dnn',
+        default=0,
+        type=float,
+        help='L2 regularizer strength applied to DNN')
+    args_parser.add_argument(
+        '--seed',
+        default=1024,
+        type=int,
+        help='to use as random seed.')
+    args_parser.add_argument(
+        '--dnn_dropout',
+        default=0,
+        type=float,
+        help='float in [0,1), the probability we will drop out a given DNN coordinate.')
+    args_parser.add_argument(
+        '--dnn_activation',
+        default='relu',
+        type=str,
+        help='Activation function to use in DNN')
+    args_parser.add_argument(
+        '--dnn_use_bn',
+        default=False,
+        type=bool,
+        help='Whether use BatchNormalization before activation or not in DNN')
+    args_parser.add_argument(
+        '--low_rank',
+        default=32,
+        type=int,
+        help='Positive integer, dimensionality of low-rank sapce.')
+    args_parser.add_argument(
+        '--num_experts',
+        default=4,
+        type=int,
+        help='Positive integer, number of experts.')
     
     args = args_parser.parse_args()
     main(**vars(args))
