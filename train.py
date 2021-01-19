@@ -116,17 +116,17 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
         print(model_name+' is not supported now.')
         return
     
-    gpus = int(os.getenv('SM_NUM_GPUS', '0'))
-    print('gpus:', gpus)
-    if gpus > 1:
-        from tensorflow.keras.utils import multi_gpu_model
-        model = multi_gpu_model(model, gpus=gpus)
+    # gpus = int(os.getenv('SM_NUM_GPUS', '0'))
+    # print('gpus:', gpus)
+    # if gpus > 1:
+    #     from tensorflow.keras.utils import multi_gpu_model
+    #     model = multi_gpu_model(model, gpus=gpus)
     
-    model.compile("adam", "binary_crossentropy",
-                  metrics=['binary_crossentropy'], )
+    # model.compile("adam", "binary_crossentropy",
+    #               metrics=['binary_crossentropy'], )
 
-    history = model.fit(train_model_input, train[target].values,
-                        batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2, )
+    # model.fit(train_model_input, train[target].values, batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2)
+    model.fit(train_model_input, batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2)
     pred_ans = model.predict(test_model_input, batch_size=256)
     try:
         print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
