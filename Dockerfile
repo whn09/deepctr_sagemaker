@@ -23,10 +23,12 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt 
 RUN curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install tensorflow-model-server
 
-RUN pip install -r requirements.txt
+COPY ./ /opt/ml/code
+
+RUN pip install -r /opt/ml/code/requirements.txt
 
 ENV PATH="/opt/ml/code:${PATH}"
 
 # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
-COPY ./ /opt/ml/code
+
 WORKDIR /opt/ml/code
