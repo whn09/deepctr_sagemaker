@@ -1,14 +1,27 @@
 import os
 import argparse
 
+import json
 import pandas as pd
+import tensorflow as tf
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-# from tensorflow.keras.utils import multi_gpu_model
 
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
+
+
+def get_integer_mapping(le):
+    '''
+    Return a dict mapping labels to their integer values from an SKlearn LabelEncoder
+    le = a fitted SKlearn LabelEncoder
+    '''
+    res = {}
+    for idx, val in enumerate(le.classes_):
+        res.update({val:idx})
+    return res
+
 
 def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     print(kwargs)
@@ -22,9 +35,20 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     target = ['label']
 
     # 1.Label Encoding for sparse features,and do simple Transformation for dense features
+    feat_index_dict = {}
     for feat in sparse_features:
         lbe = LabelEncoder()
         data[feat] = lbe.fit_transform(data[feat])
+        feat_index_dict.update({feat:get_integer_mapping(lbe)})
+    
+    # save category features index for serving stage
+    with open(os.path.join(model_dir, "feat_index_dict.json"), 'w') as fo:
+        json.dump(feat_index_dict, fo)
+
+    # save min max value for each dense feature 
+    s_max,s_min = data[dense_features].max(axis=0),data[dense_features].min(axis=0)
+    pd.concat([s_max, s_min],keys=['max','min'],axis=1).to_csv(os.path.join(model_dir, 'max_min.txt'), sep='\t')
+
     mms = MinMaxScaler(feature_range=(0, 1))
     data[dense_features] = mms.fit_transform(data[dense_features])
 
@@ -89,6 +113,7 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     gpus = int(os.getenv('SM_NUM_GPUS', '0'))
     print('gpus:', gpus)
     if gpus > 1:
+        from tensorflow.keras.utils import multi_gpu_model
         model = multi_gpu_model(model, gpus=gpus)
     
     model.compile("adam", "binary_crossentropy",
@@ -106,7 +131,19 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     except Exception as e:
         print(e)
     
-    model.save_weights(os.path.join(model_dir, 'DeepFM_w.h5'))
+    # model.save_weights(os.path.join(model_dir, 'DeepFM_w.h5'))
+
+    # 5.saved Model by build_raw_serving_input ,generate model in export_path
+    def serving_input_receiver_fn():
+        feature_map = {}
+        for i in range(len(sparse_features)):
+            feature_map[sparse_features[i]] = tf.placeholder(tf.int32,shape=(None, ),name='{}'.format(sparse_features[i]))
+        for i in range(len(dense_features)):
+            feature_map[dense_features[i]] = tf.placeholder(tf.float32,shape=(None, ),name='{}'.format(dense_features[i]))
+        return tf.estimator.export.build_raw_serving_input_receiver_fn(feature_map)
+        
+    model.export_savedmodel(export_dir_base=os.path.join(model_dir, 'export/Servo'), serving_input_receiver_fn=serving_input_receiver_fn())
+
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser()
