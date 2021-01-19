@@ -126,7 +126,7 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     #               metrics=['binary_crossentropy'], )
 
     # model.fit(train_model_input, train[target].values, batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2)
-    model.fit(train_model_input, batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2)
+    model.train(train_model_input, batch_size=256, epochs=train_steps, verbose=2, validation_split=0.2)
     pred_ans = model.predict(test_model_input, batch_size=256)
     try:
         print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
