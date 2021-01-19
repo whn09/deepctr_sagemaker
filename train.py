@@ -5,7 +5,6 @@ import pandas as pd
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from tensorflow.keras.utils import multi_gpu_model
 
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
@@ -89,6 +88,7 @@ def main(model_dir, data_dir, train_steps, model_name):
     gpus = int(os.getenv('SM_NUM_GPUS', '0'))
     print('gpus:', gpus)
     if gpus > 1:
+        from tensorflow.keras.utils import multi_gpu_model
         model = multi_gpu_model(model, gpus=gpus)
     
     model.compile("adam", "binary_crossentropy",
