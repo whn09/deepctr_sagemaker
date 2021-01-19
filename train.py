@@ -10,6 +10,7 @@ from tensorflow.keras.utils import multi_gpu_model
 from deepctr.models import *
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
 
+
 def main(model_dir, data_dir, train_steps, model_name):
     data = pd.read_csv(os.path.join(data_dir, 'criteo_sample.txt'))
 
@@ -81,7 +82,7 @@ def main(model_dir, data_dir, train_steps, model_name):
         model = FiBiNET(linear_feature_columns, dnn_feature_columns, task='binary')
     elif model_name == 'FLEN':
         model = FLEN(linear_feature_columns, dnn_feature_columns, task='binary')
-	else:
+    else:
         print(model_name+' is not supported now.')
         return
     
