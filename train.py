@@ -69,8 +69,10 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     # 3.generate input data for model
 
     train, test = train_test_split(data, test_size=0.2, random_state=2020)
-    train_model_input = {name:train[name] for name in feature_names}
-    test_model_input = {name:test[name] for name in feature_names}
+    # train_model_input = {name:train[name] for name in feature_names}
+    # test_model_input = {name:test[name] for name in feature_names}
+    train_model_input = input_fn_pandas(train,sparse_features+dense_features,'label')
+    test_model_input = input_fn_pandas(test,sparse_features+dense_features,None)
 
     # 4.Define Model,train,predict and evaluate
     if model_name == 'DeepFM':
