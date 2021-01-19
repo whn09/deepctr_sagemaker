@@ -3,7 +3,9 @@ import argparse
 
 import json
 import pandas as pd
-import tensorflow as tf
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior() 
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
