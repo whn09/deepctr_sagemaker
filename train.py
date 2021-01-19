@@ -77,7 +77,7 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
     # 4.Define Model,train,predict and evaluate
     if model_name == 'DeepFM':
         # model = DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=kwargs['fm_group'], dnn_hidden_units=kwargs['dnn_hidden_units'], l2_reg_linear=kwargs['l2_reg_linear'], l2_reg_embedding=kwargs['l2_reg_embedding'], l2_reg_dnn=kwargs['l2_reg_dnn'], seed=kwargs['seed'], dnn_dropout=kwargs['dnn_dropout'], dnn_activation=kwargs['dnn_activation'], dnn_use_bn=kwargs['dnn_use_bn'], task=task)
-        model = DeepFMEstimator(linear_feature_columns, dnn_feature_columns, fm_group=kwargs['fm_group'], dnn_hidden_units=kwargs['dnn_hidden_units'], l2_reg_linear=kwargs['l2_reg_linear'], l2_reg_embedding=kwargs['l2_reg_embedding'], l2_reg_dnn=kwargs['l2_reg_dnn'], seed=kwargs['seed'], dnn_dropout=kwargs['dnn_dropout'], dnn_activation=kwargs['dnn_activation'], dnn_use_bn=kwargs['dnn_use_bn'], task=task)
+        model = DeepFMEstimator(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=kwargs['dnn_hidden_units'], l2_reg_linear=kwargs['l2_reg_linear'], l2_reg_embedding=kwargs['l2_reg_embedding'], l2_reg_dnn=kwargs['l2_reg_dnn'], seed=kwargs['seed'], dnn_dropout=kwargs['dnn_dropout'], dnn_activation=kwargs['dnn_activation'], dnn_use_bn=kwargs['dnn_use_bn'], task=task)
     elif model_name == 'FNN':
         model = FNN(linear_feature_columns, dnn_feature_columns, task=task)
     elif model_name == 'WDL':
