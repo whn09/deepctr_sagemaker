@@ -13,7 +13,7 @@
 
 # For more information on creating a Dockerfile
 # https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
-FROM tensorflow/tensorflow:2.2.2-gpu
+FROM tensorflow/tensorflow:2.4.0-gpu
 
 RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 
