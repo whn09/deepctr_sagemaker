@@ -124,7 +124,7 @@ def main(model_dir, data_dir, train_steps, model_name, task, **kwargs):
             feature_map[dense_features[i]] = tf.placeholder(tf.float32,shape=(None, ),name='{}'.format(dense_features[i]))
         return tf.estimator.export.build_raw_serving_input_receiver_fn(feature_map)
         
-    model.export_savedmodel(export_dir_base=os.path.join(model_dir, 'export/Servo'), serving_input_receiver_fn=serving_input_receiver_fn())
+    model.export_saved_model(export_dir_base=os.path.join(model_dir, 'export/Servo'), serving_input_receiver_fn=serving_input_receiver_fn())
 
 
 if __name__ == "__main__":
