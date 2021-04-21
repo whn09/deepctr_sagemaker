@@ -49,6 +49,13 @@ then
 fi
 
 # Get the login command from ECR and execute it directly
+if [[ $region =~ ^cn.* ]]
+then
+    $(aws ecr get-login --region ${region} --registry-ids 727897471807 --no-include-email)
+else
+    $(aws ecr get-login --region ${region} --registry-ids 763104351884 --no-include-email)
+fi
+
 $(aws ecr get-login --region ${region} --no-include-email)
 
 # Build the docker image locally with the image name and then push it to ECR
