@@ -1,3 +1,4 @@
 deepctr[gpu]
 pandas
 sklearn
+pyarrow
