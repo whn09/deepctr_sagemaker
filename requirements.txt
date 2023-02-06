@@ -1,4 +1,5 @@
-deepctr[gpu]
+#deepctr[gpu]
+deepctr-torch
 pandas
 sklearn
 pyarrow
